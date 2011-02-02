@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Force all output through stdout for logging
+exec 2>&1
+
+# Util
+function most_recent_commit {
+    git rev-list HEAD | head -n 1
+}
+
+function die {
+    echo "$1"
+    exit $2
+}
+
+# Paths
+root="/sites/dev.mozilla.james.local"
+master_dir="$root/master"
+branch_dir="$root/branches"
+
+# Validate the master repo
+[ -d "$master_dir" ] || die "master repo not available" 1
+cd "$master_dir"
+
+[ `git config remote.origin.mirror` == "true" ] || \
+    die  "master repo is not a mirror (git clone --mirror)" 2
+
+# Make the branch dir
+mkdir -p "$branch_dir" || die "Unable to create branch directory" 3
+
+# Update the master repo
+git remote prune origin
+git fetch
+
+# Checkout all the branches into working directories (check if any
+# exist first)
+[ `ls refs/heads | wc -l` -gt 0 ] && \
+for ref in refs/heads/*; do
+    branch=`basename "$ref"`
+    dest="$branch_dir/$branch"
+
+    # Ignore any HEAD reference
+    if [ "$branch" == "HEAD" ]; then
+	continue
+    fi
+
+    if ! [ -d "$dest" ]; then
+	# New branch, clone it and start the service
+	git clone -b "$branch" "$master_dir" "$dest"
+	runsv "$dest" &
+    else
+	# Existing branch, update and restart the service if necessary
+	(cd "$dest";
+	    last_commit=`most_recent_commit`
+	    git pull > /dev/null
+	    if ! [ "$last_commit" == `most_recent_commit` ]; then
+		echo "RESTARTING $dest"
+		sv restart .
+	    fi
+	)
+    fi
+
+done
+
+# Clean up deleted branches
+cd "$branch_dir" || die "Branch directory does not exist" 4
+
+# Check if dir is empty, then loop through existing branches
+[ `ls | wc -l` -gt 0 ] && \
+for branch in *; do
+    if ! [ -f "$master_dir/refs/heads/$branch" ]; then
+	# Stop the service first, second time around delete the
+	# directory
+	(cd "$branch";
+	    if sv status .; then
+		echo "STOPPING $branch"
+		sv exit .
+	    else
+		echo "REMOVING $branch"
+		rm -rf `pwd`
+	    fi
+	)
+    fi
+done
+
+
+
