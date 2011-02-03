@@ -1,6 +1,6 @@
 
 This is a runit (http://smarden.org/runit/) service, but the meat is
-in the script `manifest-branches`.
+in the script `servable-branches`.
 
 The script takes a mirror of a git repository (git clone --mirror)
 and continually updates & publishes each branch into a working
