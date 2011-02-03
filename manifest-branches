@@ -18,14 +18,13 @@ root="/sites/dev.mozilla.james.local"
 master_dir="$root/master"
 branch_dir="$root/branches"
 
-# Validate the master repo
+# Validate the master repo & branch dir
 [ -d "$master_dir" ] || die "master repo not available" 1
 cd "$master_dir"
 
 [ `git config remote.origin.mirror` == "true" ] || \
     die  "master repo is not a mirror (git clone --mirror)" 2
 
-# Make the branch dir
 mkdir -p "$branch_dir" || die "Unable to create branch directory" 3
 
 # Update the master repo
