@@ -1,5 +1,8 @@
 
-This script takes a mirror of a git repository (git clone --mirror)
+This is a runit (http://smarden.org/runit/) service, but the meat is
+in the script `manifest-branches`.
+
+The script takes a mirror of a git repository (git clone --mirror)
 and continually updates & publishes each branch into a working
 directory on the filesystem. The primary purpose of this is for
 serving each branch as a unique website (branch1.site.com,
@@ -7,5 +10,5 @@ branch2.site.com, etc.)
 
 Currently, it even creates a web service for each branch so that it
 can be served immediately. This makes it depend on runit
-(http://smarden.org/runit/), but it can be generalized to work with
+(), but it can be generalized to work with
 any server setup.
