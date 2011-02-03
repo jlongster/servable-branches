@@ -9,6 +9,5 @@ serving each branch as a unique website (branch1.site.com,
 branch2.site.com, etc.)
 
 Currently, it even creates a web service for each branch so that it
-can be served immediately. This makes it depend on runit
-(), but it can be generalized to work with
-any server setup.
+can be served immediately. This makes it depend on runit, but it can
+be generalized to work with any server setup.
