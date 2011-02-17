@@ -14,7 +14,10 @@ function die {
 }
 
 # Paths
-root="/sites/dev.mozilla.james.local"
+
+[ -n "$1" ] || die "Usage: $0 <repo>" 5
+
+root="$1"
 master_dir="$root/master"
 branch_dir="$root/branches"
 
@@ -46,12 +49,15 @@ for ref in refs/heads/*; do
     if ! [ -d "$dest" ]; then
 	# New branch, clone it and start the service
 	git clone -b "$branch" "$master_dir" "$dest"
-	runsv "$dest" &
+	if [ -f "$dest/run" ]; then
+	    runsv "$dest" &
+	fi
     else
 	# Existing branch, update and restart the service if necessary
 	(cd "$dest";
 	    last_commit=`most_recent_commit`
 	    git pull > /dev/null
+	    git submodule update --init --recursive
 	    if ! [ "$last_commit" == `most_recent_commit` ]; then
 		echo "RESTARTING $dest"
 		sv restart .
