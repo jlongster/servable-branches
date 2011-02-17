@@ -1,8 +1,0 @@
-#!/bin/sh
-
-root=`dirname "$0"`
-
-rw-add n d5S next \
-rw-sleep \$next
-
-exec chpst -uhttp "$root"/servable-branches
